@@ -1,65 +1,131 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useRef, useState } from 'react';
+
+type Item = {
+  type: 'Fruit' | 'Vegetable';
+  name: string;
+};
+
+const initialData: Item[] = [
+  { type: 'Fruit', name: 'Apple' },
+  { type: 'Vegetable', name: 'Broccoli' },
+  { type: 'Vegetable', name: 'Mushroom' },
+  { type: 'Fruit', name: 'Banana' },
+  { type: 'Vegetable', name: 'Tomato' },
+  { type: 'Fruit', name: 'Orange' },
+  { type: 'Fruit', name: 'Mango' },
+  { type: 'Fruit', name: 'Pineapple' },
+  { type: 'Vegetable', name: 'Cucumber' },
+  { type: 'Fruit', name: 'Watermelon' },
+  { type: 'Vegetable', name: 'Carrot' },
+];
+
+export default function Page() {
+  const [allItems, setALlItems] = useState<Item[]>(initialData);
+  const [tableItems, setTableItems] = useState<Item[]>([]);
+  const timeouts = useRef<Record<string, NodeJS.Timeout>>({});
+  const returnQueueRef = useRef(0);
+  const AUTO_RETURN_DELAY = 5000;
+  const STEP_DELAY = 1000;
+
+  const addTable = (item: Item) => {
+    setTableItems((prev) => [...prev, item]);
+    setALlItems((prev) => prev.filter((i) => i.name !== item.name));
+
+    const timeout = setTimeout(() => {
+      const now = Date.now();
+      const delay = Math.max(0, returnQueueRef.current - now);
+      const scheduledTime = now + delay + STEP_DELAY;
+      returnQueueRef.current = scheduledTime;
+
+      setTimeout(() => {
+        deleteTable(item);
+      }, delay + STEP_DELAY);
+    }, AUTO_RETURN_DELAY);
+
+    timeouts.current[item.name] = timeout;
+  };
+
+  const deleteTable = (item: Item) => {
+    setALlItems((prev) => [...prev, item]);
+    setTableItems((prev) => prev.filter((i) => i.name !== item.name));
+    if (timeouts.current[item.name]) {
+      clearTimeout(timeouts.current[item.name]);
+      delete timeouts.current[item.name];
+    }
+  };
+
+  const fruits = tableItems.filter((item) => item.type === 'Fruit');
+  const vegetables = tableItems.filter((item) => item.type === 'Vegetable');
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className='min-h-screen bg-gray-100 p-10'>
+      <div className='grid grid-cols-3 gap-6'>
+        <div className='bg-white p-4 rounded-xl shadow'>
+          <div className='space-y-2'>
+            {allItems.map((item, index) => (
+              <div
+                key={index}
+                onClick={() => addTable(item)}
+                className='border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 cursor-pointer text-black text-center'
+              >
+                {item.name}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className='col-span-2 bg-white p-4 rounded-xl shadow'>
+          <div className='grid grid-cols-2 gap-6'>
+            <div className=' h-200 border-1 border-gray-200'>
+              <h3 className='font-medium mb-2 text-center bg-gray-200 py-2 text-black '>
+                Fruit
+              </h3>
+              <div className='px-4'>
+                <table className='w-full border-separate border-spacing-y-3'>
+                  <tbody>
+                    {fruits.map((item, index) => (
+                      <tr
+                        className='cursor-pointer'
+                        key={index}
+                        onClick={() => deleteTable(item)}
+                      >
+                        <td className='px-4 py-3 bg-white border-1 border-gray-200 rounded text-black text-center hover:bg-gray-50 transition'>
+                          {item.name}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className=' h-200 border-1 border-gray-200'>
+              <h3 className='font-medium mb-2 text-center bg-gray-200 py-2 text-black '>
+                Vegetable
+              </h3>
+              <div className='px-4'>
+                <table className='w-full border-separate border-spacing-y-3'>
+                  <tbody>
+                    {vegetables.map((item, index) => (
+                      <tr
+                        className='cursor-pointer'
+                        key={index}
+                        onClick={() => deleteTable(item)}
+                      >
+                        <td className='px-4 py-3 bg-white border-1 border-gray-200 rounded text-black text-center hover:bg-gray-50 transition'>
+                          {item.name}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

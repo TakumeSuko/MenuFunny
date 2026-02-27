@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -13,22 +13,39 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "types": ["vitest/globals"],
     "plugins": [
       {
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/_assets/*": ["app/_assets/*"],
+      "@/_components/*": ["app/_components/*"],
+      "@/_constant/*": ["app/_constant/*"],
+      "@/_graphql/*": ["app/_graphql/*"],
+      "@/_styles/*": ["app/_styles/*"],
+      "@/_types/*": ["app/_types/*"],
+      "@/_utils/*": ["app/_utils/*"],
+      "@/_config/*": ["app/_config/*"],
+      "@/*": ["app/(routes)/*"],
+      "@/public/*": ["public/*"],
+      "@/package.json": ["package.json"],
+      "@/gd_bundle-g2-g1.crt": ["gd_bundle-g2-g1.crt"],
+      "@/public/lottie/*": ["public/lottie/*"],
+      "@/public/images/*": ["public/images/*"]
+    },
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "/api/auth/[...nextauth].ts",
+    "app/_components/CurrentCardStyle.test.tsx",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
